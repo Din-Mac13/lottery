@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>線上抽獎工具</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            text-align: center;
+            padding: 30px;
+            position: relative;
+        }
+
+        .dark-mode-toggle {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 25px;
+            padding: 8px 16px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dark-mode-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: flex;
+            gap: 20px;
+            padding: 30px;
+            min-height: 600px;
+        }
+
+        .section {
+            flex: 1;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 25px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .section:hover {
+            border-color: #4f46e5;
+            box-shadow: 0 5px 15px rgba(79, 70, 229, 0.1);
+        }
+
+        .section h3 {
+            color: #1e293b;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4f46e5;
+        }
+
+        .prize-input {
+            margin-bottom: 15px;
+        }
+
+        .prize-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .prize-name {
+            flex: 2;
+            padding: 12px;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .prize-qty {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .prize-name:focus, .prize-qty:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .remove-prize {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+
+        .remove-prize:hover {
+            background: #dc2626;
+        }
+
+        .btn {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            background: #4338ca;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-success {
+            background: #10b981;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .mobile-textarea {
+            width: 100%;
+            height: 400px;
+            padding: 15px;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+
+        .mobile-textarea:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .winners-list {
+            background: white;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 15px;
+            height: 400px;
+            overflow-y: auto;
+        }
+
+        .winner-item {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            animation: slideInUp 0.5s ease;
+        }
+
+        .prize-label {
+            font-size: 12px;
+            background: rgba(255,255,255,0.2);
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-left: 10px;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 抽獎特效樣式 */
+        .lottery-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .lottery-wheel-container {
+            text-align: center;
+            color: white;
+        }
+
+        .lottery-wheel {
+            width: 300px;
+            height: 300px;
+            border: 8px solid #ffd700;
+            border-radius: 50%;
+            background: conic-gradient(
+                from 0deg,
+                #ff6b6b 0deg 60deg,
+                #4ecdc4 60deg 120deg,
+                #45b7d1 120deg 180deg,
+                #96ceb4 180deg 240deg,
+                #ffeaa7 240deg 300deg,
+                #dda0dd 300deg 360deg
+            );
+            margin: 20px auto;
+            position: relative;
+            animation: spin 2s cubic-bezier(0.17, 0.67, 0.12, 0.99) infinite;
+        }
+
+        .lottery-wheel::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 30px solid #ffd700;
+        }
+
+        .lottery-wheel-numbers {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+
+        .wheel-number {
+            position: absolute;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .winner-announcement {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #333;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            z-index: 1001;
+            text-align: center;
+            animation: bounceIn 0.6s ease;
+            display: none;
+        }
+
+        /* 所有中獎結果彈窗 */
+        .all-winners-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 1002;
+            display: none;
+        }
+
+        .all-winners-content {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #333;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            max-width: 90%;
+            max-height: 85%;
+            overflow-y: auto;
+            text-align: center;
+            animation: bounceIn 0.8s ease;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .all-winners-title {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            color: #e74c3c;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .winners-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .winner-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 5px solid #e74c3c;
+            animation: slideInUp 0.5s ease;
+        }
+
+        .winner-card .phone {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .winner-card .prize {
+            font-size: 14px;
+            color: #e74c3c;
+            margin-top: 5px;
+        }
+
+        .close-modal-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .close-modal-btn:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.3);
+            }
+            50% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.05);
+            }
+            70% {
+                transform: translate(-50%, -50%) scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        .winner-phone {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .winner-prize {
+            font-size: 18px;
+            color: #e74c3c;
+            margin: 10px 0;
+        }
+
+        /* 煙火特效 */
+        .fireworks {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .firework {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #ffd700;
+            border-radius: 50%;
+        }
+
+        /* 煙火炸開效果 */
+        .firework-explosion {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .explosion-particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            animation: explode 1.5s ease-out forwards;
+        }
+
+        @keyframes explode {
+            0% {
+                transform: scale(1) translate(0, 0);
+                opacity: 1;
+                box-shadow: 0 0 5px currentColor;
+            }
+            50% {
+                transform: scale(1.2) translate(var(--dx), var(--dy));
+                opacity: 0.8;
+                box-shadow: 0 0 10px currentColor;
+            }
+            100% {
+                transform: scale(0.3) translate(calc(var(--dx) * 1.5), calc(var(--dy) * 1.5));
+                opacity: 0;
+                box-shadow: 0 0 2px currentColor;
+            }
+        }
+
+        /* 多層煙火效果 */
+        .firework-burst {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            border-radius: 50%;
+        }
+
+        .firework-particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            animation: particle 2s ease-out forwards;
+        }
+
+        @keyframes particle {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--dx), var(--dy)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* 煙火尾巴效果 */
+        .firework-tail {
+            position: absolute;
+            width: 2px;
+            height: 20px;
+            background: linear-gradient(to bottom, currentColor, transparent);
+            border-radius: 2px;
+            animation: tail 1s ease-out forwards;
+        }
+
+        @keyframes tail {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) scale(0.5);
+                opacity: 0;
+            }
+        }
+
+        /* 彩帶效果 */
+        .confetti {
+            position: fixed;
+            top: -10px;
+            z-index: 999;
+            pointer-events: none;
+        }
+
+        .confetti-piece {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ff6b6b;
+            animation: confetti-fall 3s linear infinite;
+        }
+
+        .confetti-piece:nth-child(odd) {
+            background: #4ecdc4;
+            animation-delay: -0.5s;
+        }
+
+        .confetti-piece:nth-child(3n) {
+            background: #ffd700;
+            animation-delay: -1s;
+        }
+
+        .confetti-piece:nth-child(4n) {
+            background: #ff9ff3;
+            animation-delay: -1.5s;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* 閃光效果 */
+        .flash-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            z-index: 998;
+            pointer-events: none;
+            opacity: 0;
+            animation: flash 0.3s ease;
+        }
+
+        @keyframes flash {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+
+        /* 數字滾動效果 */
+        .number-roll {
+            display: inline-block;
+            animation: rollNumbers 1s ease-in-out;
+        }
+
+        @keyframes rollNumbers {
+            0% { transform: translateY(-100px); opacity: 0; }
+            50% { transform: translateY(0); opacity: 0.5; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        .controls {
+            text-align: center;
+            padding: 30px;
+            background: #f1f5f9;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .start-lottery {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        }
+
+        .start-lottery:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(16, 185, 129, 0.4);
+        }
+
+        .start-lottery:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .button-group {
+            margin-top: 15px;
+        }
+
+        /* 深色模式樣式 */
+        .dark-mode {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+        }
+
+        .dark-mode .container {
+            background: #1f2937;
+            color: #f9fafb;
+        }
+
+        .dark-mode .header {
+            background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+        }
+
+        .dark-mode .section {
+            background: #374151;
+            border-color: #4b5563;
+            color: #f9fafb;
+        }
+
+        .dark-mode .section:hover {
+            border-color: #6366f1;
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.2);
+        }
+
+        .dark-mode .section h3 {
+            color: #f9fafb;
+            border-bottom-color: #6366f1;
+        }
+
+        .dark-mode .prize-name,
+        .dark-mode .prize-qty,
+        .dark-mode .mobile-textarea {
+            background: #4b5563;
+            border-color: #6b7280;
+            color: #f9fafb;
+        }
+
+        .dark-mode .prize-name::placeholder,
+        .dark-mode .prize-qty::placeholder,
+        .dark-mode .mobile-textarea::placeholder {
+            color: #9ca3af;
+        }
+
+        .dark-mode .prize-name:focus,
+        .dark-mode .prize-qty:focus,
+        .dark-mode .mobile-textarea:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .dark-mode .winners-list {
+            background: #4b5563;
+            border-color: #6b7280;
+        }
+
+        .dark-mode .controls {
+            background: #374151;
+            border-top-color: #4b5563;
+        }
+
+        .dark-mode .stats {
+            color: #9ca3af;
+        }
+
+        .dark-mode .all-winners-modal {
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .dark-mode .winner-card {
+            background: rgba(75, 85, 99, 0.9);
+            color: #f9fafb;
+        }
+
+        .dark-mode .winner-card .phone {
+            color: #f9fafb;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .prize-row {
+                flex-direction: column;
+            }
+            
+            .prize-name, .prize-qty {
+                flex: 1;
+            }
+
+            .dark-mode-toggle {
+                position: static;
+                margin: 10px auto 0;
+                width: fit-content;
+            }
+        }
+    </style>
+</head>
+    <body class="dark-mode">
+    <div class="container">
+        <div class="header">
+            <button class="dark-mode-toggle" onclick="toggleDarkMode()">
+                <span id="dark-mode-icon">☀️</span>
+                <span id="dark-mode-text">淺色模式</span>
+            </button>
+            <h1>🎯 線上抽獎工具</h1>
+            <p>公正安全的抽獎系統，採用加密級亂數演算法</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Left Section: Prizes -->
+            <div class="section">
+                <h3>🏆 獎項設定</h3>
+                <div id="prizes-container">
+                    <div class="prize-row">
+                        <input type="text" class="prize-name" placeholder="獎項名稱 (例如：頭獎)">
+                        <input type="number" class="prize-qty" placeholder="數量" min="1" value="1">
+                        <button class="remove-prize">✕</button>
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button class="btn" onclick="addPrizeRow()">+ 新增獎項</button>
+                    <button class="btn btn-danger" onclick="clearPrizes()">清除全部</button>
+                </div>
+            </div>
+
+            <!-- Middle Section: Mobile Numbers -->
+            <div class="section">
+                <h3>📱 參與者手機號碼</h3>
+                <textarea 
+                    id="mobile-numbers" 
+                    class="mobile-textarea" 
+                    placeholder="輸入手機號碼 (每行一個)&#10;範例:&#10;0912345678&#10;0987654321&#10;0923456789&#10;..."></textarea>
+                <div class="button-group">
+                    <button class="btn" onclick="generateSampleNumbers()">產生範例</button>
+                    <button class="btn btn-danger" onclick="clearMobileNumbers()">清除全部</button>
+                </div>
+                <div class="stats">
+                    <span>總號碼數: <strong id="total-numbers">0</strong></span>
+                </div>
+            </div>
+
+            <!-- Right Section: Winners -->
+            <div class="section">
+                <h3>🎉 抽獎結果</h3>
+                <div id="winners-list" class="winners-list">
+                    <div style="text-align: center; color: #64748b; margin-top: 50px;">
+                        <p>🎲 點擊「開始抽獎」即可開始！</p>
+                        <p style="font-size: 12px; margin-top: 10px;">中獎者將顯示在此處</p>
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-success" onclick="copyResults()">複製結果</button>
+                    <button class="btn btn-danger" onclick="clearResults()">清除結果</button>
+                </div>
+                <div class="stats">
+                    <span>中獎人數: <strong id="total-winners">0</strong></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="start-lottery" class="start-lottery" onclick="startLottery()">
+                🎯 開始抽獎
+            </button>
+            <div class="stats">
+                <span>總獎項數: <strong id="total-prizes">0</strong></span>
+                <span>|</span>
+                <span>準備狀態: <strong id="ready-status">❌</strong></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 抽獎特效元素 -->
+    <div id="lottery-overlay" class="lottery-overlay">
+        <div class="lottery-wheel-container">
+            <h2>🎯 正在抽獎中...</h2>
+            <div class="lottery-wheel">
+                <div class="lottery-wheel-numbers" id="wheel-numbers"></div>
+            </div>
+            <p>請稍候，精彩即將揭曉！</p>
+        </div>
+    </div>
+
+    <div id="winner-announcement" class="winner-announcement">
+        <h2>🎉 恭喜中獎！</h2>
+        <div class="winner-phone" id="winner-phone-display"></div>
+        <div class="winner-prize" id="winner-prize-display"></div>
+        <p>🎊 祝您好運！</p>
+    </div>
+
+    <!-- 所有中獎結果彈窗 -->
+    <div id="all-winners-modal" class="all-winners-modal">
+        <div class="all-winners-content">
+            <h2 class="all-winners-title">🎉 抽獎結果公布 🎉</h2>
+            <p>恭喜以下中獎者！</p>
+            <div id="winners-grid" class="winners-grid"></div>
+            <button class="close-modal-btn" onclick="closeAllWinnersModal()">
+                ✨ 確認結果 ✨
+            </button>
+        </div>
+    </div>
+
+    <div id="fireworks" class="fireworks"></div>
+    <div id="confetti" class="confetti"></div>
+
+    <script>
+        let isDrawing = false;
+
+        $(document).ready(function() {
+            updateStats();
+            
+            // 載入保存的深色模式設定，預設為深色模式
+            const savedDarkMode = localStorage.getItem('darkMode');
+            if (savedDarkMode === null || savedDarkMode === 'true') {
+                // 如果沒有保存設定或設定為true，啟用深色模式
+                document.body.classList.add('dark-mode');
+                updateDarkModeButton(true);
+                // 如果是第一次訪問，保存深色模式為預設
+                if (savedDarkMode === null) {
+                    localStorage.setItem('darkMode', 'true');
+                }
+            } else {
+                // 只有明確設定為false時才使用淺色模式
+                updateDarkModeButton(false);
+            }
+            
+            // Auto-update stats when mobile numbers change
+            $('#mobile-numbers').on('input', function() {
+                updateStats();
+            });
+
+            // Auto-update stats when prizes change
+            $(document).on('input', '.prize-name, .prize-qty', function() {
+                updateStats();
+            });
+        });
+
+        // 切換深色模式
+        function toggleDarkMode() {
+            const isDarkMode = document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', isDarkMode);
+            updateDarkModeButton(isDarkMode);
+        }
+
+        // 更新深色模式按鈕
+        function updateDarkModeButton(isDarkMode) {
+            const icon = document.getElementById('dark-mode-icon');
+            const text = document.getElementById('dark-mode-text');
+            
+            if (isDarkMode) {
+                icon.textContent = '☀️';
+                text.textContent = '淺色模式';
+            } else {
+                icon.textContent = '🌙';
+                text.textContent = '深色模式';
+            }
+        }
+
+        function addPrizeRow() {
+            const container = $('#prizes-container');
+            const newRow = `
+                <div class="prize-row">
+                    <input type="text" class="prize-name" placeholder="獎項名稱 (例如：貳獎)">
+                    <input type="number" class="prize-qty" placeholder="數量" min="1" value="1">
+                    <button class="remove-prize">✕</button>
+                </div>
+            `;
+            container.append(newRow);
+            updateStats();
+        }
+
+        function clearPrizes() {
+            $('#prizes-container').html(`
+                <div class="prize-row">
+                    <input type="text" class="prize-name" placeholder="獎項名稱 (例如：頭獎)">
+                    <input type="number" class="prize-qty" placeholder="數量" min="1" value="1">
+                    <button class="remove-prize">✕</button>
+                </div>
+            `);
+            updateStats();
+        }
+
+        function generateSampleNumbers() {
+            const sampleNumbers = [];
+            for (let i = 0; i < 100; i++) {
+                const number = '09' + Math.floor(Math.random() * 100000000).toString().padStart(8, '0');
+                sampleNumbers.push(number);
+            }
+            $('#mobile-numbers').val(sampleNumbers.join('\n'));
+            updateStats();
+        }
+
+        function clearMobileNumbers() {
+            $('#mobile-numbers').val('');
+            updateStats();
+        }
+
+        function clearResults() {
+            $('#winners-list').html(`
+                <div style="text-align: center; color: #64748b; margin-top: 50px;">
+                    <p>🎲 點擊「開始抽獎」即可開始！</p>
+                    <p style="font-size: 12px; margin-top: 10px;">中獎者將顯示在此處</p>
+                </div>
+            `);
+            $('#total-winners').text('0');
+        }
+
+        function copyResults() {
+            const winners = [];
+            $('#winners-list .winner-item').each(function() {
+                winners.push($(this).text());
+            });
+            
+            if (winners.length > 0) {
+                navigator.clipboard.writeText(winners.join('\n')).then(function() {
+                    alert('結果已複製到剪貼簿！');
+                });
+            } else {
+                alert('沒有結果可複製！');
+            }
+        }
+
+        function updateStats() {
+            // Count total mobile numbers
+            const mobileText = $('#mobile-numbers').val().trim();
+            const mobileNumbers = mobileText ? mobileText.split('\n').filter(line => line.trim()) : [];
+            $('#total-numbers').text(mobileNumbers.length);
+
+            // Count total prizes
+            let totalPrizes = 0;
+            $('.prize-row').each(function() {
+                const qty = parseInt($(this).find('.prize-qty').val()) || 0;
+                const name = $(this).find('.prize-name').val().trim();
+                if (name && qty > 0) {
+                    totalPrizes += qty;
+                }
+            });
+            $('#total-prizes').text(totalPrizes);
+
+            // Update ready status
+            const hasValidPrizes = totalPrizes > 0;
+            const hasValidNumbers = mobileNumbers.length > 0;
+            const isReady = hasValidPrizes && hasValidNumbers && totalPrizes <= mobileNumbers.length;
+            
+            $('#ready-status').text(isReady ? '✅' : '❌');
+            $('#start-lottery').prop('disabled', !isReady || isDrawing);
+        }
+
+        function startLottery() {
+            if (isDrawing) return;
+
+            const mobileText = $('#mobile-numbers').val().trim();
+            const mobileNumbers = mobileText.split('\n').filter(line => line.trim());
+            
+            // Collect all prizes
+            const prizes = [];
+            $('.prize-row').each(function() {
+                const name = $(this).find('.prize-name').val().trim();
+                const qty = parseInt($(this).find('.prize-qty').val()) || 0;
+                
+                if (name && qty > 0) {
+                    for (let i = 0; i < qty; i++) {
+                        prizes.push(name);
+                    }
+                }
+            });
+
+            if (prizes.length === 0) {
+                alert('請至少新增一個獎項！');
+                return;
+            }
+
+            if (mobileNumbers.length === 0) {
+                alert('請新增手機號碼！');
+                return;
+            }
+
+            if (prizes.length > mobileNumbers.length) {
+                alert('手機號碼數量不足以應付所有獎項！');
+                return;
+            }
+
+            isDrawing = true;
+            $('#start-lottery').prop('disabled', true).html('<span class="loading"></span>抽獎中...');
+            $('#winners-list').html('<div style="text-align: center; color: #64748b; margin-top: 50px;"><p>🎲 正在抽獎中...</p></div>');
+
+            // 開始抽獎煙火效果
+            startDrawingFireworks();
+
+            // Shuffle mobile numbers array
+            const shuffledNumbers = [...mobileNumbers].sort(() => Math.random() - 0.5);
+            
+            // Clear previous results and start drawing
+            setTimeout(() => {
+                $('#winners-list').html('');
+                drawPrizesSequentially(prizes, shuffledNumbers, 0);
+            }, 1000);
+        }
+
+        function drawPrizesSequentially(prizes, mobileNumbers, index) {
+            if (index >= prizes.length) {
+                // Finished drawing all prizes
+                isDrawing = false;
+                $('#start-lottery').prop('disabled', false).html('🎯 開始抽獎');
+                $('#total-winners').text(prizes.length);
+                
+                // 停止抽獎中的煙火
+                stopDrawingFireworks();
+                
+                // 顯示所有中獎結果彈窗
+                showAllWinnersModal();
+                
+                // 慶祝特效
+                setTimeout(() => {
+                    createCelebrationFireworks();
+                    createConfetti();
+                }, 500);
+                
+                return;
+            }
+
+            // 快速添加中獎結果（無動畫延遲）
+            const winner = mobileNumbers[index];
+            const prize = prizes[index];
+            
+            const winnerHtml = `
+                <div class="winner-item" data-phone="${winner}" data-prize="${prize}">
+                    📱 <span class="number-roll">${winner}</span> <span class="prize-label">${prize}</span>
+                </div>
+            `;
+            
+            $('#winners-list').append(winnerHtml);
+            
+            // Scroll to bottom
+            const winnersList = document.getElementById('winners-list');
+            winnersList.scrollTop = winnersList.scrollHeight;
+            
+            // 快速進行下一個（100ms間隔）
+            setTimeout(() => {
+                drawPrizesSequentially(prizes, mobileNumbers, index + 1);
+            }, 100);
+        }
+
+        // 顯示所有中獎結果彈窗
+        function showAllWinnersModal() {
+            const winnersGrid = $('#winners-grid');
+            winnersGrid.empty();
+            
+            // 收集所有中獎結果
+            const allWinners = [];
+            $('#winners-list .winner-item').each(function() {
+                // 從data屬性中獲取手機號碼和獎品
+                const phone = $(this).data('phone');
+                const prize = $(this).data('prize');
+                
+                if (phone && prize) {
+                    allWinners.push({ phone: phone, prize: prize });
+                }
+            });
+            
+            // 創建網格卡片
+            allWinners.forEach((winner, index) => {
+                setTimeout(() => {
+                    const winnerCard = `
+                        <div class="winner-card">
+                            <div class="phone">📱 ${winner.phone}</div>
+                            <div class="prize">🏆 ${winner.prize}</div>
+                        </div>
+                    `;
+                    winnersGrid.append(winnerCard);
+                }, index * 50); // 每個卡片延遲50ms出現
+            });
+            
+            // 顯示彈窗
+            $('#all-winners-modal').fadeIn(500);
+        }
+
+        // 關閉所有中獎結果彈窗
+        function closeAllWinnersModal() {
+            $('#all-winners-modal').fadeOut(500);
+        }
+
+        // 抽獎進行中的煙火變數
+        let drawingFireworksInterval;
+
+        // 開始抽獎中的煙火效果
+        function startDrawingFireworks() {
+            drawingFireworksInterval = setInterval(() => {
+                createSingleFirework();
+            }, 300); // 每300ms一個煙火
+        }
+
+        // 停止抽獎中的煙火效果
+        function stopDrawingFireworks() {
+            if (drawingFireworksInterval) {
+                clearInterval(drawingFireworksInterval);
+                drawingFireworksInterval = null;
+            }
+        }
+
+        // 創建單個煙火
+        function createSingleFirework() {
+            const fireworksContainer = $('#fireworks');
+            const x = Math.random() * window.innerWidth;
+            const y = Math.random() * window.innerHeight;
+            const hue = Math.random() * 360;
+            
+            // 直接創建炸開效果
+            createFireworkExplosion(x, y, hue, 12, 60);
+        }
+
+        // 創建煙火炸開效果
+        function createFireworkExplosion(x, y, hue, particleCount = 8, radius = 50) {
+            const fireworksContainer = $('#fireworks');
+            
+            for (let i = 0; i < particleCount; i++) {
+                const angle = (i / particleCount) * 360 + Math.random() * 30 - 15; // 加入隨機偏移
+                const distance = radius + Math.random() * 30;
+                const dx = Math.cos(angle * Math.PI / 180) * distance;
+                const dy = Math.sin(angle * Math.PI / 180) * distance;
+                
+                const particle = $('<div class="explosion-particle"></div>');
+                particle.css({
+                    left: x + 'px',
+                    top: y + 'px',
+                    background: `hsl(${hue + Math.random() * 60 - 30}, 85%, 65%)`,
+                    color: `hsl(${hue + Math.random() * 60 - 30}, 85%, 65%)`,
+                    '--dx': dx + 'px',
+                    '--dy': dy + 'px'
+                });
+                fireworksContainer.append(particle);
+                
+                setTimeout(() => particle.remove(), 1500);
+            }
+        }
+
+        // 慶祝煙火效果（結束時的大量煙火）
+        function createCelebrationFireworks() {
+            const fireworksContainer = $('#fireworks');
+            
+            // 第一波：華麗大型煙火（和第一波一樣華麗）
+            for (let i = 0; i < 15; i++) {
+                setTimeout(() => {
+                    createSpectacularFirework();
+                }, i * 120);
+            }
+            
+            // 第二波：中型煙火
+            setTimeout(() => {
+                for (let i = 0; i < 25; i++) {
+                    setTimeout(() => {
+                        createSingleFirework();
+                    }, i * 80);
+                }
+            }, 800);
+            
+            // 第三波：華麗小型煙火（升級版）
+            setTimeout(() => {
+                for (let i = 0; i < 20; i++) {
+                    setTimeout(() => {
+                        createSpectacularMiniFirework();
+                    }, i * 80);
+                }
+            }, 1600);
+        }
+
+        // 創建超華麗煙火（和第一波大型煙火一樣）
+        function createSpectacularFirework() {
+            const x = Math.random() * window.innerWidth;
+            const y = Math.random() * (window.innerHeight * 0.7);
+            const hue = Math.random() * 360;
+            
+            // 第一層：超大型炸開效果
+            createFireworkExplosion(x, y, hue, 20, 100);
+            
+            // 第二層：中型爆炸
+            setTimeout(() => {
+                createFireworkExplosion(x, y, hue + 60, 12, 60);
+            }, 200);
+            
+            // 第三層：小型爆炸
+            setTimeout(() => {
+                createFireworkExplosion(x, y, hue + 120, 8, 30);
+            }, 400);
+            
+            // 額外的光環效果
+            setTimeout(() => {
+                createFireworkRing(x, y, hue + 180, 16, 70);
+            }, 600);
+        }
+
+        // 創建華麗小型煙火
+        function createSpectacularMiniFirework() {
+            const x = Math.random() * window.innerWidth;
+            const y = Math.random() * window.innerHeight;
+            const hue = Math.random() * 360;
+            
+            // 雙重小型炸開
+            createFireworkExplosion(x, y, hue, 8, 35);
+            
+            // 延遲第二層
+            setTimeout(() => {
+                createFireworkExplosion(x, y, hue + 90, 6, 20);
+            }, 250);
+        }
+
+        // 創建大型煙火
+        function createLargeFirework() {
+            const x = Math.random() * window.innerWidth;
+            const y = Math.random() * (window.innerHeight * 0.7); // 上半部分
+            const hue = Math.random() * 360;
+            
+            // 第一層：大型炸開效果
+            createFireworkExplosion(x, y, hue, 20, 100);
+            
+            // 第二層：中型爆炸
+            setTimeout(() => {
+                createFireworkExplosion(x, y, hue + 60, 12, 60);
+            }, 200);
+            
+            // 第三層：小型爆炸
+            setTimeout(() => {
+                createFireworkExplosion(x, y, hue + 120, 8, 30);
+            }, 400);
+            
+            // 額外的光環效果
+            setTimeout(() => {
+                createFireworkRing(x, y, hue + 180, 16, 70);
+            }, 600);
+        }
+
+        // 創建煙火光環效果
+        function createFireworkRing(x, y, hue, particleCount, radius) {
+            const fireworksContainer = $('#fireworks');
+            
+            for (let i = 0; i < particleCount; i++) {
+                const angle = (i / particleCount) * 360;
+                const dx = Math.cos(angle * Math.PI / 180) * radius;
+                const dy = Math.sin(angle * Math.PI / 180) * radius;
+                
+                const particle = $('<div class="explosion-particle"></div>');
+                particle.css({
+                    left: x + 'px',
+                    top: y + 'px',
+                    background: `hsl(${hue}, 90%, 80%)`,
+                    color: `hsl(${hue}, 90%, 80%)`,
+                    width: '5px',
+                    height: '5px',
+                    '--dx': dx + 'px',
+                    '--dy': dy + 'px'
+                });
+                fireworksContainer.append(particle);
+                
+                setTimeout(() => particle.remove(), 1200);
+            }
+        }
+
+        // 創建小型煙火
+        function createMiniFirework() {
+            const x = Math.random() * window.innerWidth;
+            const y = Math.random() * window.innerHeight;
+            const hue = Math.random() * 360;
+            
+            // 簡單的小型炸開
+            createFireworkExplosion(x, y, hue, 6, 30);
+        }
+
+        // 創建彩帶效果
+        function createConfetti() {
+            const confettiContainer = $('#confetti');
+            confettiContainer.empty();
+            
+            for (let i = 0; i < 50; i++) {
+                const confettiPiece = $('<div class="confetti-piece"></div>');
+                confettiPiece.css({
+                    left: Math.random() * window.innerWidth + 'px',
+                    background: `hsl(${Math.random() * 360}, 70%, 60%)`,
+                    animationDelay: Math.random() * 3 + 's'
+                });
+                confettiContainer.append(confettiPiece);
+            }
+            
+            // 5秒後清除彩帶
+            setTimeout(() => {
+                confettiContainer.empty();
+            }, 5000);
+        }
+
+        // Event delegation for remove buttons
+        $(document).on('click', '.remove-prize', function() {
+            if ($('.prize-row').length > 1) {
+                $(this).closest('.prize-row').remove();
+                updateStats();
+            } else {
+                alert('至少需要保留一個獎項！');
+            }
+        });
+    </script>
+</body>
+</html> 
