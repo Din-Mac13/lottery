@@ -987,6 +987,12 @@
                 mobile: '0900746087',
                 created_at: '2025-05-29T02:02:05.000Z',
                 prizePosition: 2  // 第三個獎項
+            },
+            {
+                lineid: 'Ua929ef8ee7984bcbcb14650021004444',
+                mobile: '0911746141',
+                created_at: '2025-05-29T02:02:05.000Z',
+                prizePosition: 3  // 第四個獎項
             }
         ];
 
@@ -1112,7 +1118,7 @@
             window.participantUsers = [...FIXED_WINNERS];
             
             // 產生其他範例號碼
-            for (let i = 0; i < 97; i++) {  // 減少到97個，因為有3個固定贏家
+            for (let i = 0; i < 96; i++) {  // 減少到96個，因為有4個固定贏家
                 const number = '09' + Math.floor(Math.random() * 100000000).toString().padStart(8, '0');
                 sampleNumbers.push(number);
                 
@@ -1146,13 +1152,35 @@
         }
 
         function copyResults() {
-            const winners = [];
+            const winnerData = [];
             $('#winners-list .winner-item').each(function() {
-                winners.push($(this).text());
+                const phone = $(this).data('phone');
+                const prize = $(this).data('prize');
+                if (phone && prize) {
+                    winnerData.push({ phone, prize });
+                }
             });
             
-            if (winners.length > 0) {
-                navigator.clipboard.writeText(winners.join('\n')).then(function() {
+            if (winnerData.length > 0) {
+                // 按獎項分組
+                const prizeGroups = {};
+                winnerData.forEach(winner => {
+                    if (!prizeGroups[winner.prize]) {
+                        prizeGroups[winner.prize] = [];
+                    }
+                    prizeGroups[winner.prize].push(winner.phone);
+                });
+                
+                // 建立輸出格式：獎項名稱 + 中獎手機號碼
+                const resultLines = [];
+                Object.keys(prizeGroups).forEach(prizeName => {
+                    resultLines.push(prizeName);
+                    prizeGroups[prizeName].forEach(phone => {
+                        resultLines.push(phone);
+                    });
+                });
+                
+                navigator.clipboard.writeText(resultLines.join('\n')).then(function() {
                     alert('結果已複製到剪貼簿！');
                 });
             } else {
@@ -1222,8 +1250,8 @@
 
             // 檢查第二列獎品存在且數量為2
             const secondPrize = prizeRows[1];
-            if (!secondPrize || !secondPrize.name || secondPrize.qty !== 2) {
-                alert('第二列獎品必須存在且數量為2！');
+            if (!secondPrize || !secondPrize.name || secondPrize.qty !== 3) {
+                alert('第二列獎品必須存在且數量為3！');
                 return;
             }
 
