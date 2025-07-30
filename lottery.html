@@ -1321,6 +1321,9 @@
                 console.log('中獎者資料:', window.lotteryResults);
                 console.table(window.lotteryResults);
                 
+                // 傳送中獎結果到 API
+                sendWinnersToAPI();
+                
                 // 顯示所有中獎結果彈窗
                 showAllWinnersModal();
                 
@@ -1409,6 +1412,42 @@
         // 關閉所有中獎結果彈窗
         function closeAllWinnersModal() {
             $('#all-winners-modal').fadeOut(500);
+        }
+
+        // 傳送中獎結果到 API
+        async function sendWinnersToAPI() {
+            if (!window.lotteryResults || window.lotteryResults.length === 0) {
+                console.log('沒有中獎結果可傳送');
+                return;
+            }
+
+            try {
+                console.log('正在傳送中獎結果到 API...');
+                
+                const response = await fetch('https://api.panorama-insight.com/line-auth-lottos/winners', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(window.lotteryResults)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const responseData = await response.text();
+                console.log('中獎結果傳送成功:', responseData);
+                
+                // 可選：顯示成功訊息給用戶
+                // alert('中獎結果已成功記錄！');
+                
+            } catch (error) {
+                console.error('傳送中獎結果失敗:', error);
+                
+                // 可選：顯示錯誤訊息給用戶
+                // alert('記錄中獎結果時發生錯誤，請稍後再試。');
+            }
         }
 
         // 抽獎進行中的煙火變數
